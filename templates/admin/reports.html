@@ -1,0 +1,199 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Relatórios{% endblock %}
+
+{% block head_extras %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Relatórios e Estatísticas</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-line me-1"></i>
+                Vendas por Dia (Últimos 30 dias)
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-pizza-slice me-1"></i>
+                Produtos Mais Vendidos
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="productsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-table me-1"></i>
+                Top 10 Produtos por Receita
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="topProductsTable">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Qtd. Vendida</th>
+                                <th>Receita</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dados serão preenchidos via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Função para formatar valores em reais
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(value);
+    }
+    
+    // Carregar dados de vendas por dia
+    fetch('{{ url_for("admin_bp.sales_by_day") }}')
+        .then(response => response.json())
+        .then(data => {
+            const dates = data.map(item => item.date);
+            const totals = data.map(item => item.total);
+            
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Vendas (R$)',
+                        data: totals,
+                        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    
+    // Carregar dados de produtos populares
+    fetch('{{ url_for("admin_bp.popular_products") }}')
+        .then(response => response.json())
+        .then(data => {
+            // Ordenar por receita (decrescente)
+            data.sort((a, b) => b.revenue - a.revenue);
+            
+            // Preparar dados para o gráfico
+            const products = data.slice(0, 5).map(item => item.name);
+            const quantities = data.slice(0, 5).map(item => item.count);
+            
+            // Criar gráfico de barras
+            const ctx = document.getElementById('productsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: products,
+                    datasets: [{
+                        label: 'Quantidade Vendida',
+                        data: quantities,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Preencher a tabela de top produtos
+            const tableBody = document.getElementById('topProductsTable').getElementsByTagName('tbody')[0];
+            data.forEach(item => {
+                const row = tableBody.insertRow();
+                
+                const nameCell = row.insertCell(0);
+                nameCell.textContent = item.name;
+                
+                const countCell = row.insertCell(1);
+                countCell.textContent = item.count;
+                
+                const revenueCell = row.insertCell(2);
+                revenueCell.textContent = formatCurrency(item.revenue);
+            });
+        });
+</script>
+{% endblock %}

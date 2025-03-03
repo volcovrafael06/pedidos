@@ -1,0 +1,229 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Conversa com {{ customer.name or customer.phone }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .chat-container {
+        height: 500px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .message {
+        margin-bottom: 15px;
+        max-width: 80%;
+    }
+    .message-customer {
+        background-color: #f1f0f0;
+        color: #333;
+        padding: 10px 15px;
+        border-radius: 15px;
+        float: left;
+        clear: both;
+    }
+    .message-system {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 15px;
+        float: right;
+        clear: both;
+    }
+    .message-human {
+        background-color: #198754;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 15px;
+        float: right;
+        clear: both;
+    }
+    .message-time {
+        font-size: 0.8em;
+        margin-top: 5px;
+        color: #6c757d;
+    }
+    .message-content {
+        word-break: break-word;
+    }
+    .clearfix {
+        clear: both;
+    }
+    
+    /* Melhorias para dispositivos móveis */
+    @media (max-width: 768px) {
+        .chat-container {
+            height: 400px;
+        }
+        .message {
+            max-width: 90%;
+        }
+        .customer-info {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Conversa com {{ customer.name or customer.phone }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('whatsapp_bp.conversations') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row mb-4">
+    <div class="col-md-4 customer-info">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-user me-1"></i>
+                Informações do Cliente
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Nome</dt>
+                    <dd class="col-sm-8">{{ customer.name or 'Não identificado' }}</dd>
+                    
+                    <dt class="col-sm-4">Telefone</dt>
+                    <dd class="col-sm-8">{{ customer.phone }}</dd>
+                    
+                    <dt class="col-sm-4">Endereço</dt>
+                    <dd class="col-sm-8">{{ customer.address or 'Não informado' }}</dd>
+                    
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        {% if customer.human_support %}
+                            {% if customer.assigned_user %}
+                                <span class="badge bg-success">Em atendimento</span>
+                            {% else %}
+                                <span class="badge bg-danger">Aguardando atendente</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary">Bot</span>
+                        {% endif %}
+                    </dd>
+                    
+                    {% if customer.assigned_user %}
+                    <dt class="col-sm-4">Atendente</dt>
+                    <dd class="col-sm-8">{{ customer.assigned_user.name }}</dd>
+                    {% endif %}
+                </dl>
+                
+                <div class="d-grid gap-2">
+                    {% if customer.human_support and not customer.assigned_user %}
+                    <!-- Botão para assumir a conversa -->
+                    <form method="POST" action="{{ url_for('whatsapp_bp.take_conversation', id=customer.id) }}">
+                        <button type="submit" class="btn btn-success btn-block w-100">
+                            <i class="fas fa-user-check"></i> Assumir Conversa
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    {% if customer.human_support and customer.assigned_to == current_user.id %}
+                    <!-- Botão para finalizar atendimento -->
+                    <form method="POST" action="{{ url_for('whatsapp_bp.release_conversation', id=customer.id) }}">
+                        <button type="submit" class="btn btn-warning btn-block w-100 mt-2">
+                            <i class="fas fa-robot"></i> Finalizar Atendimento
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    {% if not customer.human_support %}
+                    <!-- Botão para ativar modo humano -->
+                    <form method="POST" action="{{ url_for('whatsapp_bp.take_conversation', id=customer.id) }}">
+                        <button type="submit" class="btn btn-primary btn-block w-100">
+                            <i class="fas fa-headset"></i> Iniciar Atendimento
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Histórico de mensagens -->
+        <div class="chat-container" id="chatContainer">
+            {% for message in messages %}
+                {% if message.direction == 'inbound' %}
+                <div class="message message-customer">
+                    <div class="message-content">{{ message.message|nl2br }}</div>
+                    <div class="message-time">{{ message.timestamp.strftime('%d/%m/%Y %H:%M') }}</div>
+                </div>
+                <div class="clearfix"></div>
+                {% else %}
+                    {% if message.is_human %}
+                    <div class="message message-human">
+                        <div class="message-content">{{ message.message|nl2br }}</div>
+                        <div class="message-time">{{ message.timestamp.strftime('%d/%m/%Y %H:%M') }} (atendente)</div>
+                    </div>
+                    {% else %}
+                    <div class="message message-system">
+                        <div class="message-content">{{ message.message|nl2br }}</div>
+                        <div class="message-time">{{ message.timestamp.strftime('%d/%m/%Y %H:%M') }} (bot)</div>
+                    </div>
+                    {% endif %}
+                <div class="clearfix"></div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <!-- Formulário para responder -->
+        {% if customer.assigned_to == current_user.id %}
+        <form action="{{ url_for('whatsapp_bp.reply_to_conversation', id=customer.id) }}" method="POST">
+            <div class="mb-3">
+                <label for="message" class="form-label">Responder ao Cliente</label>
+                <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fab fa-whatsapp"></i> Enviar Mensagem
+            </button>
+        </form>
+        {% else %}
+            {% if customer.assigned_user %}
+                <div class="alert alert-warning">
+                    Esta conversa está sendo atendida por {{ customer.assigned_user.name }}
+                </div>
+            {% elif customer.human_support %}
+                <div class="alert alert-info">
+                    Cliente aguardando atendimento. Clique em "Assumir Conversa" para atendê-lo.
+                </div>
+            {% else %}
+                <div class="alert alert-secondary">
+                    Cliente em atendimento automatizado pelo bot.
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Função para rolar para o final do histórico de mensagens
+    function scrollToBottom() {
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    // Executar quando a página carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        scrollToBottom();
+    });
+</script>
+{% endblock %}

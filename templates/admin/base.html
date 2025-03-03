@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %} - Sistema de Pedidos Pizza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-size: .875rem;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: #343a40;
+        }
+        
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: rgba(255, 255, 255, .75);
+            padding: 0.5rem 1rem;
+        }
+        
+        .nav-link:hover {
+            color: #fff;
+        }
+        
+        .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, .1);
+        }
+        
+        .sidebar-heading {
+            font-size: .75rem;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .5);
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+        }
+        
+        @media (max-width: 767.98px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding-top: 0;
+            }
+            
+            .sidebar-sticky {
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+            
+            .navbar-toggler {
+                display: block;
+                margin-right: 10px;
+            }
+            
+            #sidebarMenu.show {
+                max-height: 100vh;
+                overflow-y: auto;
+            }
+            
+            #sidebarMenu {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-in-out;
+            }
+            
+            .content-wrapper {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 16.666667%;
+            }
+            
+            .sidebar {
+                width: 16.666667%;
+            }
+            
+            .navbar-toggler {
+                display: none;
+            }
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 mr-0 px-3" href="#">🍕 PizzaBot Admin</a>
+        <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="w-100 d-none d-md-block"></div>
+        <ul class="navbar-nav px-3 d-flex flex-row">
+            <li class="nav-item text-nowrap me-2">
+                <span class="nav-link">{{ current_user.name }}</span>
+            </li>
+            <li class="nav-item text-nowrap">
+                <a class="nav-link" href="{{ url_for('logout') }}">Sair</a>
+            </li>
+        </ul>
+    </nav>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+                <div class="sidebar-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin_bp.dashboard' %}active{% endif %}" href="{{ url_for('admin_bp.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin_bp.orders' %}active{% endif %}" href="{{ url_for('admin_bp.orders') }}">
+                                <i class="fas fa-clipboard-list me-2"></i>Pedidos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin_bp.products' %}active{% endif %}" href="{{ url_for('admin_bp.products') }}">
+                                <i class="fas fa-pizza-slice me-2"></i>Produtos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin_bp.categories' %}active{% endif %}" href="{{ url_for('admin_bp.categories') }}">
+                                <i class="fas fa-tags me-2"></i>Categorias
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin_bp.customers' %}active{% endif %}" href="{{ url_for('admin_bp.customers') }}">
+                                <i class="fas fa-users me-2"></i>Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin_bp.reports' %}active{% endif %}" href="{{ url_for('admin_bp.reports') }}">
+                                <i class="fas fa-chart-bar me-2"></i>Relatórios
+                            </a>
+                        </li>
+                        
+                        <!-- Seção do WhatsApp -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'whatsapp_bp.conversations' %}active{% endif %}" href="{{ url_for('whatsapp_bp.conversations') }}">
+                                <i class="fab fa-whatsapp me-2"></i>Conversas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'whatsapp_bp.whatsapp_settings' %}active{% endif %}" href="{{ url_for('whatsapp_bp.whatsapp_settings') }}">
+                                <i class="fas fa-cog me-2"></i>Conf. WhatsApp
+                            </a>
+                        </li>
+                        
+                        {% if current_user.role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin_bp.users' %}active{% endif %}" href="{{ url_for('admin_bp.users') }}">
+                                <i class="fas fa-user-shield me-2"></i>Usuários
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+            
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4 content-wrapper main-content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+    
+    <script>
+        // Fechar automaticamente o menu após clique em dispositivos móveis
+        document.addEventListener('DOMContentLoaded', function() {
+            const mediaQuery = window.matchMedia('(max-width: 767.98px)');
+            if (mediaQuery.matches) {
+                const navLinks = document.querySelectorAll('#sidebarMenu .nav-link');
+                const menuToggle = document.querySelector('.navbar-toggler');
+                const bsCollapse = new bootstrap.Collapse(document.getElementById('sidebarMenu'), {toggle: false});
+                
+                navLinks.forEach(function(link) {
+                    link.addEventListener('click', function() {
+                        bsCollapse.hide();
+                    });
+                });
+            }
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,147 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Conversas de WhatsApp{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .table td, .table th {
+        white-space: nowrap;
+    }
+    @media (max-width: 768px) {
+        .btn-sm {
+            padding: .25rem .4rem;
+            font-size: .75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Conversas de WhatsApp</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('whatsapp_bp.whatsapp_settings') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-cog"></i> Configurações
+        </a>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<!-- Clientes com pedido de atendimento -->
+{% if human_support_customers %}
+<div class="card mb-4 border-danger">
+    <div class="card-header bg-danger text-white">
+        <i class="fas fa-headset me-1"></i>
+        Clientes aguardando atendimento ({{ human_support_customers|length }})
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Telefone</th>
+                        <th>Última Interação</th>
+                        <th>Atendente</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in human_support_customers %}
+                    <tr>
+                        <td>{{ customer.name or 'Não identificado' }}</td>
+                        <td>{{ customer.phone }}</td>
+                        <td>{{ customer.last_interaction.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>
+                            {% if customer.assigned_user %}
+                                {{ customer.assigned_user.name }}
+                            {% else %}
+                                <span class="badge bg-warning">Não atribuído</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('whatsapp_bp.view_conversation', id=customer.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-comments"></i> Ver
+                            </a>
+                            {% if not customer.assigned_user %}
+                            <form method="POST" action="{{ url_for('whatsapp_bp.take_conversation', id=customer.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="fas fa-user-check"></i> Assumir
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Todas as conversas -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-comments me-1"></i>
+        Todas as Conversas
+    </div>
+    <div class="card-body">
+        {% if customers %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Telefone</th>
+                        <th>Última Interação</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr>
+                        <td>{{ customer.name or 'Não identificado' }}</td>
+                        <td>{{ customer.phone }}</td>
+                        <td>{{ customer.last_interaction.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>
+                            {% if customer.human_support %}
+                                {% if customer.assigned_user %}
+                                    <span class="badge bg-success">Em atendimento</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Aguardando atendente</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Bot</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('whatsapp_bp.view_conversation', id=customer.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-comments"></i> Ver Conversa
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info mb-0">
+            Nenhuma conversa registrada ainda.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

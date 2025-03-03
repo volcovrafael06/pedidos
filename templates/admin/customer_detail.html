@@ -1,0 +1,171 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Cliente: {{ customer.name or customer.phone }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Cliente: {{ customer.name or customer.phone }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin_bp.customers') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-user me-1"></i>
+                Informações do Cliente
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">ID</dt>
+                    <dd class="col-sm-8">{{ customer.id }}</dd>
+                    
+                    <dt class="col-sm-4">Nome</dt>
+                    <dd class="col-sm-8">{{ customer.name or 'Não informado' }}</dd>
+                    
+                    <dt class="col-sm-4">Telefone</dt>
+                    <dd class="col-sm-8">{{ customer.phone }}</dd>
+                    
+                    <dt class="col-sm-4">Endereço</dt>
+                    <dd class="col-sm-8">{{ customer.address or 'Não informado' }}</dd>
+                    
+                    <dt class="col-sm-4">Última Interação</dt>
+                    <dd class="col-sm-8">{{ customer.last_interaction.strftime('%d/%m/%Y %H:%M') if customer.last_interaction else 'Nunca' }}</dd>
+                    
+                    <dt class="col-sm-4">Total de Pedidos</dt>
+                    <dd class="col-sm-8">{{ orders|length }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-comment-alt me-1"></i>
+                Enviar Mensagem
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('admin_bp.send_customer_message', id=customer.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Mensagem</label>
+                        <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fab fa-whatsapp"></i> Enviar Mensagem
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-history me-1"></i>
+        Histórico de Pedidos
+    </div>
+    <div class="card-body">
+        {% if orders %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Data</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Pagamento</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>R$ {{ "%.2f"|format(order.total) }}</td>
+                            <td>
+                                {% if order.status == 'novo' %}
+                                    <span class="badge order-new">Novo</span>
+                                {% elif order.status == 'em_preparo' %}
+                                    <span class="badge order-preparing">Em Preparo</span>
+                                {% elif order.status == 'pronto' %}
+                                    <span class="badge order-ready">Pronto</span>
+                                {% elif order.status == 'em_entrega' %}
+                                    <span class="badge order-delivering">Em Entrega</span>
+                                {% elif order.status == 'entregue' %}
+                                    <span class="badge order-delivered">Entregue</span>
+                                {% elif order.status == 'cancelado' %}
+                                    <span class="badge order-canceled">Cancelado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if order.payment_method == 'dinheiro' %}
+                                    <span class="badge bg-success">Dinheiro</span>
+                                {% elif order.payment_method == 'cartao' %}
+                                    <span class="badge bg-primary">Cartão</span>
+                                {% elif order.payment_method == 'pix' %}
+                                    <span class="badge bg-info">PIX</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não definido</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin_bp.view_order', id=order.id) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info mb-0">
+                Este cliente ainda não realizou nenhum pedido.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-comments me-1"></i>
+        Histórico de Mensagens
+    </div>
+    <div class="card-body">
+        {% if customer.messages %}
+            <div class="list-group">
+                {% for message in customer.messages|sort(attribute='timestamp', reverse=True) %}
+                    {% if message.direction == 'inbound' %}
+                    <div class="list-group-item list-group-item-action flex-column align-items-start">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="fas fa-arrow-right text-primary"></i> Cliente disse:</h6>
+                            <small>{{ message.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                        <p class="mb-1">{{ message.message }}</p>
+                    </div>
+                    {% else %}
+                    <div class="list-group-item list-group-item-action flex-column align-items-start">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="fas fa-arrow-left text-success"></i> Sistema enviou:</h6>
+                            <small>{{ message.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                        <p class="mb-1">{{ message.message }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info mb-0">
+                Nenhuma mensagem trocada com este cliente.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

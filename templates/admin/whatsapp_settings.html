@@ -1,0 +1,91 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Configurações do WhatsApp{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Configurações do WhatsApp</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('whatsapp_bp.conversations') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar para Conversas
+        </a>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card mb-4 h-100">
+            <div class="card-header">
+                <i class="fab fa-whatsapp me-1"></i>
+                Configurações da API Twilio
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('whatsapp_bp.update_whatsapp_settings') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="account_sid" class="form-label">Account SID</label>
+                        <input type="text" class="form-control" id="account_sid" name="account_sid" value="{{ account_sid }}">
+                        <div class="form-text">Obtenha isso no dashboard da Twilio</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="auth_token" class="form-label">Auth Token</label>
+                        <input type="password" class="form-control" id="auth_token" name="auth_token" value="{{ auth_token }}">
+                        <div class="form-text">Mantenha esta informação em segredo</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">Número de WhatsApp</label>
+                        <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ phone_number }}" placeholder="+5511999999999">
+                        <div class="form-text">Número que será usado para enviar e receber mensagens</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Salvar Configurações</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card mb-4 h-100">
+            <div class="card-header">
+                <i class="fas fa-info-circle me-1"></i>
+                Como Configurar o WhatsApp
+            </div>
+            <div class="card-body">
+                <h5>Configurar a Twilio para WhatsApp</h5>
+                <ol>
+                    <li>Crie uma conta na <a href="https://www.twilio.com/" target="_blank">Twilio</a></li>
+                    <li>Ative o sandbox do WhatsApp no painel da Twilio</li>
+                    <li>Copie o seu Account SID e Auth Token para os campos ao lado</li>
+                    <li>Adicione o número de telefone fornecido pela Twilio</li>
+                </ol>
+                
+                <h5>Configurar o Webhook</h5>
+                <p>Configure o webhook no sandbox do WhatsApp da Twilio para apontar para:</p>
+                <div class="alert alert-info">
+                    <code style="word-wrap: break-word;">https://seu-dominio.com/whatsapp/webhook</code>
+                </div>
+                <p>Se estiver em ambiente de desenvolvimento, use uma ferramenta como ngrok para expor seu servidor local:</p>
+                <div class="alert alert-secondary">
+                    <code>ngrok http 5002</code>
+                </div>
+                
+                <h5>Testar a Conexão</h5>
+                <ol>
+                    <li>Envie uma mensagem para o número de WhatsApp fornecido pela Twilio</li>
+                    <li>Verifique se a mensagem aparece na página de conversas</li>
+                    <li>Envie uma resposta para testar o fluxo completo</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
