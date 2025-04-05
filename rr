@@ -1,0 +1,111 @@
+Escopo do Projeto: Aplicativo Mobile e Web para Fisioterapeuta
+1. Introdução
+Este documento define o escopo do projeto para o desenvolvimento de um aplicativo mobile (Android e iOS) e uma plataforma web destinada a fisioterapeutas. O objetivo principal é otimizar o gerenciamento de pacientes, exercícios e protocolos de tratamento, além de facilitar o acompanhamento da evolução dos pacientes através de relatórios mensais.
+2. Objetivos Gerais
+ * Desenvolver um aplicativo mobile intuitivo e de fácil utilização para fisioterapeutas.
+ * Criar uma plataforma web complementar para acesso em desktops e tablets, oferecendo funcionalidades semelhantes.
+ * Permitir o cadastro completo de pacientes e seus históricos.
+ * Facilitar o cadastro e organização de exercícios terapêuticos.
+ * Possibilitar a criação e aplicação de protocolos de tratamento personalizados para cada paciente.
+ * Gerar relatórios mensais detalhados sobre a evolução dos pacientes.
+ * Melhorar a comunicação entre fisioterapeuta e paciente (funcionalidade futura).
+3. Público-Alvo
+ * Fisioterapeutas que buscam uma ferramenta para gerenciar seus pacientes, exercícios e protocolos de forma eficiente.
+4. Funcionalidades Essenciais (MVP - Produto Mínimo Viável)
+4.1. Módulo de Cadastro de Pacientes:
+ * Cadastro:
+   * Nome completo
+   * Data de nascimento
+   * Sexo
+   * Endereço completo
+   * Telefone(s) de contato
+   * E-mail
+   * Profissão
+   * Queixa principal
+   * Histórico da queixa atual
+   * Histórico médico relevante (comorbidades, alergias, medicações, etc.)
+   * Exames complementares (com possibilidade de anexar arquivos)
+   * Anamnese fisioterapêutica inicial (campos personalizáveis)
+   * Observações gerais
+ * Edição: Possibilidade de editar todas as informações cadastradas.
+ * Visualização: Tela de perfil do paciente com todas as informações organizadas.
+ * Busca: Filtragem e busca de pacientes por nome, data de nascimento e outras informações relevantes.
+4.2. Módulo de Cadastro de Exercícios:
+ * Cadastro:
+   * Nome do exercício
+   * Descrição detalhada do exercício
+   * Categoria do exercício (ex: alongamento, fortalecimento, mobilidade)
+   * Músculos/articulações envolvidas
+   * Equipamentos necessários (opcional)
+   * Instruções de execução (texto)
+   * Possibilidade de adicionar imagens ou vídeos demonstrativos (URL ou upload).
+ * Edição: Possibilidade de editar todas as informações cadastradas.
+ * Visualização: Lista de exercícios cadastrados com filtros por categoria, músculos/articulações, etc.
+ * Busca: Busca de exercícios por nome, descrição e categorias.
+4.3. Módulo de Protocolo de Tratamento:
+ * Criação de Protocolos:
+   * Definição de um nome para o protocolo.
+   * Seleção de exercícios cadastrados para compor o protocolo.
+   * Definição da ordem dos exercícios.
+   * Especificação de séries, repetições, carga (se aplicável), tempo de execução/manutenção para cada exercício.
+   * Definição de frequência do protocolo (ex: diário, 3 vezes por semana).
+   * Instruções adicionais para o paciente sobre o protocolo.
+ * Associação a Pacientes:
+   * Possibilidade de associar um ou mais protocolos a um paciente específico.
+   * Definição da data de início do protocolo para o paciente.
+   * Possibilidade de adicionar observações específicas sobre a aplicação do protocolo para um determinado paciente.
+ * Visualização: Lista de protocolos criados e protocolos associados a cada paciente.
+ * Edição: Possibilidade de editar protocolos existentes (com histórico de alterações).
+4.4. Módulo de Relatórios de Evolução:
+ * Registro de Sessões:
+   * Registro da data da sessão.
+   * Exercícios realizados na sessão (com as séries, repetições, carga, etc. executadas).
+   * Observações sobre a sessão (adesão do paciente, dificuldades encontradas, progressão, regressão, etc.).
+   * Avaliação subjetiva do paciente (escala de dor, bem-estar, etc. - personalizável).
+   * Avaliação objetiva do fisioterapeuta (medidas, testes funcionais - campos personalizáveis).
+ * Geração de Relatórios Mensais:
+   * Seleção do paciente e do período (mês).
+   * Relatório contendo:
+     * Informações básicas do paciente.
+     * Protocolo de tratamento em andamento no período.
+     * Resumo das sessões realizadas no mês (datas, principais exercícios realizados).
+     * Acompanhamento das avaliações (subjetiva e objetiva) ao longo do mês (possivelmente com gráficos de evolução).
+     * Observações gerais sobre a evolução do paciente no período.
+     * Recomendações para o próximo mês.
+   * Possibilidade de exportar o relatório em formato PDF.
+5. Plataformas
+ * Aplicativo Mobile: Android e iOS (nativo ou híbrido a ser definido).
+ * Plataforma Web: Acessível através de navegadores web modernos.
+6. Design da Interface do Usuário (UI) e Experiência do Usuário (UX)
+ * Interface intuitiva, limpa e de fácil navegação em ambas as plataformas.
+ * Layout responsivo na plataforma web para adaptação a diferentes tamanhos de tela.
+ * Utilização de elementos visuais claros e consistentes.
+ * Fluxos de trabalho eficientes para as principais funcionalidades.
+7. Requisitos Não Funcionais
+ * Segurança: Proteção dos dados dos pacientes e fisioterapeutas (conformidade com LGPD no Brasil).
+ * Desempenho: Aplicação e plataforma web devem ser rápidas e responsivas.
+ * Escalabilidade: Arquitetura que permita o crescimento futuro do sistema e adição de novas funcionalidades.
+ * Confiabilidade: Sistema estável e com poucos erros.
+ * Usabilidade: Facilidade de aprendizado e utilização por fisioterapeutas com diferentes níveis de familiaridade com tecnologia.
+ * Acessibilidade: Considerar diretrizes de acessibilidade para usuários com deficiência (em fases futuras).
+8. Tecnologias (Sugestões)
+ * Mobile:
+   * Nativo: Kotlin (Android), Swift (iOS)
+   * Híbrido: React Native, Flutter
+ * Web:
+   * Frontend: React, Angular, Vue.js
+   * Backend: Node.js, Python (Django/Flask), Ruby on Rails
+ * Banco de Dados: PostgreSQL, MySQL, MongoDB
+ * Cloud: AWS, Google Cloud, Azure
+9. Próximos Passos (Após o MVP)
+ * Módulo de Comunicação com Pacientes:
+   * Envio de protocolos e lembretes de exercícios.
+   * Mensagens diretas entre fisioterapeuta e paciente.
+   * Possibilidade de o paciente registrar seu progresso (adesão, dor, etc.).
+ * Integração com Wearables: Captura de dados de atividades dos pacientes (opcional).
+ * Agenda e Agendamento de Consultas.
+ * Faturamento e Gestão Financeira.
+ * Personalização de Exercícios e Protocolos com Inteligência Artificial.
+ * Biblioteca de Exercícios Mais Extensa e com Conteúdo Multimídia Avançado.
+10. Considerações Finais
+Este escopo define as funcionalidades essenciais para o desenvolvimento de um aplicativo mobile e web robusto para fisioterapeutas. O foco inicial será no desenvolvimento do MVP, garantindo as funcionalidades core de cadastro, gestão de exercícios e protocolos, e geração de relatórios. As funcionalidades futuras serão consideradas em fases posteriores do projeto, com base no feedback dos usuários e nas necessidades do mercado. A escolha das tecnologias será definida na fase de planejamento técnico, levando em consideração os recursos disponíveis e os requisitos de desempenho e escalabilidade.
